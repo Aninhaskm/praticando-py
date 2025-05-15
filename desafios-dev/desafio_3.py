@@ -1,4 +1,7 @@
-
+"""
+Desafio 3 - Agenda de Contatos
+Este módulo permite gerenciar uma agenda de contatos, incluindo adicionar, salvar e carregar contatos de um arquivo CSV.
+"""
 import os
 
 class Contato:
