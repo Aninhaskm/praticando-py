@@ -1,76 +1,54 @@
-"""
-Desafio 2 - Simulador de Conta Bancária
-Este módulo permite simular operações básicas de uma conta bancária
-"""
-import os
+from typing import List
+from abc import ABC, abstractmethod
 
-class ContaBancaria:
-    """Classe que representa uma conta bancária simples."""
-    def __init__(self, titular, saldo=0):
-        """
-        Inicializa uma nova conta bancária.
+class ContaBancaria(ABC):
+    def __init__(self, numero: str, titular: str, saldo: float):
+        self.__numero = numero
+        self.__titular = titular
+        self.__saldo = saldo
 
-        Args:
-            titular (str): Nome do titular da conta.
-            saldo (float, opcional): Saldo inicial da conta. Padrão é 0.
-        """
-        self.titular = titular
-        self.saldo = saldo
+        if saldo < 0:
+            raise ValueError("O saldo não pode ser negativo")
+        if titular == "":
+            raise ValueError("O titular não pode ser vazio")
 
-    def depositar(self, valor):
-        """
-        Realiza um depósito na conta, se o valor for positivo.
+    def get_info(self) -> str:
+        return f"Conta {self.__numero}, Titular: {self.__titular}, Saldo: R$ {self.__saldo:.2f}"
+    
+    def get_saldo(self) -> float:
+        return self.__saldo
+    
+    def set_saldo(self, novo_saldo: float) -> None:
+        self.__saldo = novo_saldo
 
-        Args:
-            valor (float): Valor a ser depositado.
-        """
-        if valor > 0:
-            self.saldo += valor
-            print(f"Depósito de R${valor:.2f} realizado com sucesso!")
-        else:
-            print("Valor de depósito inválido.")
+    @abstractmethod
+    def sacar(self, valor: float) -> bool:
+        pass
 
-    def sacar(self, valor):
-        """
-        Realiza um saque na conta, se houver saldo suficiente e o valor for válido.
+class ContaCorrente(ContaBancaria):
+    def sacar(self, valor: float) -> bool:
+        if valor <= self.get_saldo() + 500:
+            self.set_saldo(self.get_saldo() - valor)
+            return True
+        return False
 
-        Args:
-            valor (float): Valor a ser sacado.
-        """
-        if 0 < valor <= self.saldo:
-            self.saldo -= valor
-            print(f"Saque de R${valor:.2f} realizado com sucesso!")
-        else:
-            print("Valor de saque inválido ou saldo insuficiente.")
+class ContaPoupanca(ContaBancaria):
+    def sacar(self, valor: float) -> bool:
+        if valor <= 0:
+            raise ValueError("O valor do saque não pode ser negativo")
+        if valor > self.get_saldo():
+            return False
+        self.set_saldo(self.get_saldo() - valor)
+        return True
 
-    def exibir_saldo(self):
-        """Exibe o saldo atual da conta formatado em reais."""
-        print(f"Saldo atual: R${self.saldo:.2f}")
+class Banco:
+    def __init__(self, contas: List[ContaBancaria]):
+        self.__contas = contas
 
-if __name__ == "__main__":
-    conta = ContaBancaria("Anna Kamimura", 0)
-    while True:
-        os.system('cls' if os.name == 'nt' else 'clear')
-        print("\nMenu:")
-        print("1. Depositar")
-        print("2. Sacar")
-        print("3. Exibir Saldo")
-        print("4. Sair", "\n")
+    def adicionar_conta(self, conta: ContaBancaria) -> None:
+        self.__contas.append(conta)
 
-        opcao = input("Escolha uma opção: ")
+    def mostrar_saldos(self) -> None:
+        for conta in self.__contas:
+            print(conta.get_info())
 
-        if opcao == "1":
-            valor_deposito = float(input("Digite o valor a depositar: "))
-            conta.depositar(valor_deposito)
-            input("Pressione Enter para voltar ao menu principal ...")
-        elif opcao == "2":
-            valor_saque = float(input("Digite o valor a sacar: "))
-            conta.sacar(valor_saque)
-            input("Pressione Enter para voltar ao menu principal ...")
-        elif opcao == "3":
-            conta.exibir_saldo()
-            input("Pressione Enter para voltar ao menu principal ...")
-        elif opcao == "4":
-            break
-        else:
-            print("Opção inválida.")
